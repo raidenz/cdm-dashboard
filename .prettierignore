@@ -1,5 +1,6 @@
 build/
 node_modules/
+other/
 internals/generators/
 internals/scripts/
 package-lock.json
