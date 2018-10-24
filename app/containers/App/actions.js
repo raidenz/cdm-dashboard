@@ -15,7 +15,14 @@
  *    }
  */
 
-import { LOAD_REPOS, LOAD_REPOS_SUCCESS, LOAD_REPOS_ERROR } from './constants';
+import {
+  LOAD_REPOS,
+  LOAD_REPOS_SUCCESS,
+  LOAD_REPOS_ERROR,
+  LOAD_PEOPLE,
+  LOAD_PEOPLE_SUCCESS,
+  LOAD_PEOPLE_ERROR,
+} from './constants';
 
 /**
  * Load the repositories, this action starts the request saga
@@ -54,6 +61,26 @@ export function reposLoaded(repos, username) {
 export function repoLoadingError(error) {
   return {
     type: LOAD_REPOS_ERROR,
+    error,
+  };
+}
+
+export function loadPeople() {
+  return {
+    type: LOAD_PEOPLE,
+  };
+}
+
+export function peopleLoaded(data) {
+  return {
+    type: LOAD_PEOPLE_SUCCESS,
+    data,
+  };
+}
+
+export function peopleLoadingError(error) {
+  return {
+    type: LOAD_PEOPLE_ERROR,
     error,
   };
 }

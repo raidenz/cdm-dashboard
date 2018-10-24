@@ -23,7 +23,7 @@ export default class FeaturePage extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="content-wrapper">
         <Helmet>
           <title>Feature Page</title>
           <meta

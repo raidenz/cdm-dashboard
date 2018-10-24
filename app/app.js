@@ -16,6 +16,7 @@ import { ConnectedRouter } from 'react-router-redux';
 import FontFaceObserver from 'fontfaceobserver';
 import createHistory from 'history/createBrowserHistory';
 import 'sanitize.css/sanitize.css';
+// import '../sass/style.scss';
 
 // Import root app
 import App from 'containers/App';
@@ -34,6 +35,9 @@ import { translationMessages } from './i18n';
 
 // Import CSS reset and Global Styles
 import './global-styles';
+import './vendors/iconfonts/mdi/css/materialdesignicons.css';
+import './vendors/css/vendor.bundle.base.css';
+import './css/style.css';
 
 // Observe loading of Open Sans (to remove open sans, remove the <link> tag in
 // the index.html file and this observer)

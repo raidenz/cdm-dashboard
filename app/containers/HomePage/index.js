@@ -7,53 +7,90 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 
 import injectReducer from 'utils/injectReducer';
 import injectSaga from 'utils/injectSaga';
-import {
-  makeSelectRepos,
-  makeSelectLoading,
-  makeSelectError,
-} from 'containers/App/selectors';
-import H2 from 'components/H2';
-import ReposList from 'components/ReposList';
-import AtPrefix from './AtPrefix';
-import CenteredSection from './CenteredSection';
-import Form from './Form';
-import Input from './Input';
-import Section from './Section';
-import messages from './messages';
-import { loadRepos } from '../App/actions';
-import { changeUsername } from './actions';
-import { makeSelectUsername } from './selectors';
+import { makeSelectPeopleData } from 'containers/App/selectors';
+import { fakeOnline } from 'utils/fakeData';
+
+import { loadPeople } from '../App/actions';
 import reducer from './reducer';
 import saga from './saga';
 
+import {
+  ActiveUser,
+  SimpleChart,
+  TopWidget,
+  Report,
+  Statistic,
+} from './components/Widgets';
+import BreadCrumb from './components/BreadCrumb';
+import TabSelector from './components/TabSelector';
+import CardFooterLink from './components/CardFooterLink';
+
 /* eslint-disable react/prefer-stateless-function */
 export class HomePage extends React.PureComponent {
-  /**
-   * when initial state username is not null, submit the form to load repos
-   */
+  constructor(props) {
+    super(props);
+    this.state = {
+      dummyData: [
+        51,
+        72,
+        53,
+        94,
+        65,
+        56,
+        37,
+        88,
+        69,
+        40,
+        51,
+        82,
+        38,
+        68,
+        74,
+        83,
+        77,
+        86,
+        54,
+        43,
+        35,
+        60,
+        59,
+        23,
+        65,
+        45,
+      ],
+    };
+    this.timer = this.timer.bind(this);
+  }
+  timer() {
+    const { dummyData } = this.state;
+    fakeOnline(dummyData, data => {
+      this.setState({
+        dummyData: data,
+      });
+    });
+  }
+
   componentDidMount() {
-    if (this.props.username && this.props.username.trim().length > 0) {
-      this.props.onSubmitForm();
-    }
+    this.props.loadPeople();
+    this.interval = setInterval(() => this.timer(), 2000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   render() {
-    const { loading, error, repos } = this.props;
-    const reposListProps = {
-      loading,
-      error,
-      repos,
-    };
+    const { peopleData } = this.props;
 
     return (
-      <article>
+      <article className="content-wrapper">
+        <div> {/* {JSON.stringify(this.props)} */} </div>
         <Helmet>
           <title>Home Page</title>
           <meta
@@ -61,36 +98,43 @@ export class HomePage extends React.PureComponent {
             content="A React.js Boilerplate application homepage"
           />
         </Helmet>
-        <div>
-          <CenteredSection>
-            <H2>
-              <FormattedMessage {...messages.startProjectHeader} />
-            </H2>
-            <p>
-              <FormattedMessage {...messages.startProjectMessage} />
-            </p>
-          </CenteredSection>
-          <Section>
-            <H2>
-              <FormattedMessage {...messages.trymeHeader} />
-            </H2>
-            <Form onSubmit={this.props.onSubmitForm}>
-              <label htmlFor="username">
-                <FormattedMessage {...messages.trymeMessage} />
-                <AtPrefix>
-                  <FormattedMessage {...messages.trymeAtPrefix} />
-                </AtPrefix>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="mxstbr"
-                  value={this.props.username}
-                  onChange={this.props.onChangeUsername}
-                />
-              </label>
-            </Form>
-            <ReposList {...reposListProps} />
-          </Section>
+        <BreadCrumb />
+        <TopWidget />
+        <div className="row">
+          <div className="col-md-7 grid-margin">
+            <TabSelector />
+            <div className="card">
+              <div className="card-body">
+                <div className="clearfix"> </div>
+                <SimpleChart />
+                {
+                  // selector switch
+                }
+              </div>
+              <CardFooterLink />
+            </div>
+          </div>
+          <div className="col-md-5 grid-margin stretch-card">
+            <ActiveUser data={this.state.dummyData} page={peopleData} />
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-6 grid-margin">
+            <Report
+              title="What course do your users visit?"
+              heading={['Courses', 'Completed', 'Completion %']}
+            />
+          </div>
+          <div className="col-md-6 grid-margin">
+            <Report
+              title="Who is your most active user?"
+              heading={['Users', 'Completed', 'Points']}
+            />
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="mb-3">What course do your users visit?</div>
+          <Statistic />
         </div>
       </article>
     );
@@ -98,29 +142,18 @@ export class HomePage extends React.PureComponent {
 }
 
 HomePage.propTypes = {
-  loading: PropTypes.bool,
-  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  repos: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
-  onSubmitForm: PropTypes.func,
-  username: PropTypes.string,
-  onChangeUsername: PropTypes.func,
+  peopleData: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+  loadPeople: PropTypes.func,
 };
 
 export function mapDispatchToProps(dispatch) {
   return {
-    onChangeUsername: evt => dispatch(changeUsername(evt.target.value)),
-    onSubmitForm: evt => {
-      if (evt !== undefined && evt.preventDefault) evt.preventDefault();
-      dispatch(loadRepos());
-    },
+    loadPeople: () => dispatch(loadPeople()),
   };
 }
 
 const mapStateToProps = createStructuredSelector({
-  repos: makeSelectRepos(),
-  username: makeSelectUsername(),
-  loading: makeSelectLoading(),
-  error: makeSelectError(),
+  peopleData: makeSelectPeopleData(),
 });
 
 const withConnect = connect(
